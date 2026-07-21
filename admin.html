@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Bánh Trung Thu Xuân Đỉnh</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#0A0A2E;color:#FFE080;min-height:100vh;}
+.header{background:linear-gradient(135deg,#0A0A2E,#1E1A6E);padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #F0C040;}
+.header h1{font-size:1.1rem;color:#FFE080;}
+.header .badge{background:#E8231A;color:#fff;font-size:0.65rem;padding:3px 8px;border-radius:10px;letter-spacing:0.1em;}
+.container{max-width:900px;margin:0 auto;padding:24px 16px;}
+.card{background:rgba(255,255,255,0.05);border:1px solid rgba(240,192,64,0.3);border-radius:12px;margin-bottom:20px;overflow:hidden;}
+.card-head{background:rgba(240,192,64,0.1);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;}
+.card-head h2{font-size:0.9rem;color:#F0C040;letter-spacing:0.05em;}
+.card-body{padding:16px 18px;}
+label{display:block;font-size:0.75rem;color:#C8922A;margin-bottom:4px;margin-top:10px;}
+label:first-child{margin-top:0;}
+input,textarea,select{width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(240,192,64,0.3);border-radius:6px;padding:8px 10px;color:#FFE080;font-size:0.82rem;font-family:inherit;outline:none;}
+input:focus,textarea:focus,select:focus{border-color:#F0C040;}
+textarea{resize:vertical;min-height:80px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.gift-head-row{display:grid;grid-template-columns:auto 2fr 1fr 1fr;gap:12px;align-items:end;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.product-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px;}
+.product-row input{margin-top:0;}
+.btn{padding:8px 18px;border:none;border-radius:6px;cursor:pointer;font-size:0.82rem;font-family:inherit;transition:all 0.2s;}
+.btn-add{background:rgba(240,192,64,0.15);color:#F0C040;border:1px dashed #F0C040;}
+.btn-add:hover{background:rgba(240,192,64,0.25);}
+.btn-del{background:rgba(232,35,26,0.15);color:#E8231A;border:1px solid rgba(232,35,26,0.3);width:32px;height:32px;padding:0;font-size:1rem;}
+.btn-del:hover{background:rgba(232,35,26,0.3);}
+.order-group{display:flex;gap:4px;align-items:center;}
+.btn-order{background:rgba(240,192,64,0.12);color:#F0C040;border:1px solid rgba(240,192,64,0.3);width:26px;height:26px;padding:0;font-size:0.8rem;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+.btn-order:hover{background:rgba(240,192,64,0.25);}
+.btn-order:disabled{opacity:0.25;cursor:not-allowed;}
+.btn-save{background:linear-gradient(135deg,#E8231A,#C01010);color:#fff;width:100%;padding:12px;font-size:0.9rem;border-radius:8px;margin-top:8px;}
+.btn-save:hover{opacity:0.9;}
+.btn-save:disabled{background:#555;cursor:not-allowed;}
+.msg{text-align:center;padding:10px;border-radius:6px;margin-top:10px;font-size:0.82rem;display:none;}
+.msg.ok{background:rgba(0,200,100,0.15);color:#00c864;border:1px solid rgba(0,200,100,0.3);}
+.msg.err{background:rgba(232,35,26,0.15);color:#E8231A;border:1px solid rgba(232,35,26,0.3);}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#888;display:inline-block;margin-right:6px;}
+.status-dot.ok{background:#00c864;}
+.status-dot.loading{background:#F0C040;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.section-label{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:#9090CC;margin-bottom:8px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-row span{font-size:0.82rem;color:#FFE080;}
+.toggle{position:relative;width:40px;height:22px;}
+.toggle input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#555;border-radius:22px;cursor:pointer;transition:0.3s;}
+.slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;}
+input:checked+.slider{background:#E8231A;}
+input:checked+.slider:before{transform:translateX(18px);}
+@media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr;}.product-row{grid-template-columns:1fr auto;}}
+
+/* Accordion */
+.card-body{transition:all 0.3s ease;overflow:hidden;}
+.card-body.collapsed{display:none;}
+.card-head{cursor:pointer;user-select:none;}
+.card-head:hover{background:rgba(240,192,64,0.15);}
+.accordion-icon{transition:transform 0.3s;font-size:0.8rem;color:#F0C040;}
+.accordion-icon.open{transform:rotate(180deg);}
+</style>
+</head>
+<body>
+
+<!-- Màn hình đăng nhập -->
+<div id="loginScreen" style="position:fixed;inset:0;background:#0A0A2E;display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(240,192,64,0.3);border-radius:16px;padding:36px 32px;width:320px;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:12px;">🥮</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#FFE080;margin-bottom:4px;">Bánh Trung Thu Xuân Đỉnh</div>
+    <div style="font-size:0.72rem;color:#9090CC;margin-bottom:24px;letter-spacing:0.1em;">TRANG QUẢN TRỊ</div>
+    <input id="loginInput" type="password" placeholder="Nhập mật khẩu..." 
+      style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(240,192,64,0.3);border-radius:8px;padding:10px 14px;color:#FFE080;font-size:0.85rem;outline:none;text-align:center;margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()" 
+      style="width:100%;background:linear-gradient(135deg,#E8231A,#C01010);color:#fff;border:none;border-radius:8px;padding:10px;font-size:0.85rem;cursor:pointer;font-family:inherit;">
+      Đăng nhập
+    </button>
+    <div id="loginErr" style="color:#E8231A;font-size:0.75rem;margin-top:10px;display:none;">Mật khẩu không đúng!</div>
+    <div id="loginLoading" style="color:#9090CC;font-size:0.75rem;margin-top:10px;display:none;">Đang kiểm tra...</div>
+  </div>
+</div>
+
+<div id="mainApp" style="display:none;">
+<div class="header">
+  <div>
+    <h1>🥮 Admin – Bánh Trung Thu Xuân Đỉnh</h1>
+  </div>
+  <span class="badge">QUẢN TRỊ</span>
+  <div style="margin-left:auto;font-size:0.75rem;color:#9090CC;">
+    <span class="status-dot" id="statusDot"></span><span id="statusText">Đang tải...</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SẢN PHẨM -->
+  <div class="card">
+    <div class="card-head" onclick="toggleCard(' danh sc')">
+      <h2>🍮 Danh sách sản phẩm & Giá</h2>
+      <div style="display:flex;align-items:center;gap:8px;"><button class="btn btn-add" onclick="addProduct()" onclick="event.stopPropagation()">+ Thêm sản phẩm</button><span class="accordion-icon open" id="icon- danh sc">▼</span></div>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr 2fr auto;gap:8px;margin-bottom:4px;">
+        <span class="section-label">Tên sản phẩm</span>
+        <span class="section-label">Giá (VNĐ)</span>
+        <span class="section-label">Trạng thái</span>
+        <span class="section-label">URL ảnh</span>
+        <span class="section-label">Mô tả ngắn</span>
+        <span></span>
+      </div>
+      <div id="productList"></div>
+    </div>
+  </div>
+
+  <!-- HỘP QUÀ -->
+  <div class="card">
+    <div class="card-head" onclick="toggleCard(' hp qu')">
+      <h2>🎁 Hộp quà</h2>
+      <div style="display:flex;align-items:center;gap:8px;"><button class="btn btn-add" onclick="addGiftBox()" onclick="event.stopPropagation()">+ Thêm hộp quà</button><span class="accordion-icon open" id="icon- hp qu">▼</span></div>
+    </div>
+    <div class="card-body">
+      <div id="giftBoxList"></div>
+    </div>
+  </div>
+
+  <!-- KHUYẾN MÃI -->
+  <div class="card">
+    <div class="card-head" onclick="toggleCard(' chng tr')">
+      <h2>🎉 Chương trình khuyến mãi</h2>
+      <span class="accordion-icon open" id="icon- chng tr">▼</span>
+    </div>
+    <div class="card-body">
+      <label>Nội dung khuyến mãi (để trống nếu không có)</label>
+      <textarea id="kmText" placeholder="Ví dụ: Mua từ 3 bánh trở lên giảm 5%, áp dụng cho đơn trên 500.000đ"></textarea>
+      <label>Ngày kết thúc KM</label>
+      <input type="date" id="kmEnd" style="color-scheme:dark;">
+    </div>
+  </div>
+
+  <!-- PHÍ SHIP -->
+  <div class="card">
+    <div class="card-head" onclick="toggleCard(' ph vn c')">
+      <h2>🚚 Phí vận chuyển</h2>
+      <span class="accordion-icon open" id="icon- ph vn c">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="grid2">
+        <div>
+          <label>Hà Nội (đ)</label>
+          <input type="number" id="shipHN" value="40000">
+        </div>
+        <div>
+          <label>Miền Bắc (đ)</label>
+          <input type="number" id="shipNorth" value="40000">
+        </div>
+        <div>
+          <label>Miền Trung (đ)</label>
+          <input type="number" id="shipCentral" value="60000">
+        </div>
+        <div>
+          <label>Miền Nam (đ)</label>
+          <input type="number" id="shipSouth" value="70000">
+        </div>
+      </div>
+      <label>Freeship từ (đ)</label>
+      <input type="number" id="freeshipFrom" value="500000">
+    </div>
+  </div>
+
+  <!-- GHI CHÚ / FAQ -->
+  <div class="card">
+    <div class="card-head" onclick="toggleCard(' ghi ch ')">
+      <h2>📝 Ghi chú & FAQ thêm cho Thanh Hằng</h2>
+      <span class="accordion-icon open" id="icon- ghi ch ">▼</span>
+    </div>
+    <div class="card-body">
+      <label>Ghi chú đặc biệt (thông tin thêm cho bot)</label>
+      <textarea id="extraNote" rows="10" style="min-height:220px;" placeholder="Ví dụ: Đang xả hàng sau rằm, giảm 50% tất cả sản phẩm. Hết nhân trứng muối. Giao hàng chậm 1-2 ngày do lễ..."></textarea>
+    </div>
+  </div>
+
+  <!-- MẬT KHẨU ADMIN -->
+  <div class="card">
+    <div class="card-head" onclick="toggleCard(' mt khu ')">
+      <h2>🔐 Mật khẩu Admin (chat với Thanh Hằng)</h2>
+      <span class="accordion-icon open" id="icon- mt khu ">▼</span>
+    </div>
+    <div class="card-body">
+      <label>Mật khẩu để nhận diện admin khi chat</label>
+      <input type="text" id="adminPwd" placeholder="Ví dụ: XuanDinh2026Admin">
+      <div style="font-size:0.72rem;color:#9090CC;margin-top:6px;">Khi chat với Thanh Hằng, gõ mật khẩu này để chuyển sang chế độ admin cập nhật thông tin.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head" onclick="toggleCard('shopee')">
+      <span>🛒 Link Shopee & TikTok</span>
+      <span class="accordion-icon open" id="icon-shopee">▼</span>
+    </div>
+    <div class="card-body" id="section-shopee">
+      <label>Link shop Shopee</label>
+      <input type="text" id="shopeeUrl" placeholder="https://shopee.vn/shop/...">
+      <div style="font-size:0.72rem;color:#9090CC;margin-top:6px;">Bot Thanh Hằng sẽ gửi link này khi khách hỏi "có bán trên Shopee không?"</div>
+      <label style="margin-top:14px;">Link TikTok Shop / sản phẩm TikTok</label>
+      <input type="text" id="tiktokUrl" placeholder="https://vt.tiktok.com/...">
+      <div style="font-size:0.72rem;color:#9090CC;margin-top:6px;">Bot sẽ gửi link này khi khách hỏi "có bán trên TikTok không?"</div>
+    </div>
+  </div>
+
+  <button class="btn btn-save" id="saveBtn" onclick="saveConfig()">💾 Lưu cấu hình</button>
+  <div class="msg" id="msg"></div>
+
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5z8Wx6gH16i5jXO3Cqu3HArsBRli3lPNR6yWV9eW3QZ3AnboiTkjiw0gdoctTy5y3/exec';
+
+var products = [];
+var giftBoxes = [];
+
+// Default data
+var defaultProducts = [
+  {name:'Bánh nướng nhân thập cẩm 180gr', price:55000, status:'CÒN HÀNG', img:'images/thap-cam.png', cat:'Truyền thống', desc:'Mỡ heo, lạp xưởng, hạt sen, mứt, trứng muối — vị đậm đà, không ngấy.', featured:true},
+  {name:'Bánh nướng nhân đậu xanh 180gr', price:55000, status:'CÒN HÀNG', img:'images/dau-xanh.png', cat:'Thanh nhẹ', desc:'Đậu xanh xay nhuyễn, mịn, bùi — có thể kèm trứng muối.'},
+  {name:'Bánh nướng nhân đậu đỏ 180gr', price:55000, status:'CÒN HÀNG', img:'images/dau-do.png', cat:'Thanh nhẹ', desc:'Đậu đỏ xay nhuyễn, bùi thơm — có thể kèm trứng muối.'},
+  {name:'Bánh nướng nhân trà xanh 180gr', price:55000, status:'CÒN HÀNG', img:'images/tra-xanh.jfif', cat:'Hiện đại', desc:'Nhân trà xanh xay nhuyễn, thoang thoảng hương matcha — hậu vị đắng nhẹ đặc trưng.'},
+  {name:'Bánh nướng nhân khoai môn 180gr', price:55000, status:'CÒN HÀNG', img:'images/khoai-mon.png', cat:'Dẻo béo', desc:'Nhân khoai môn xay nhuyễn, dẻo mịn, bùi béo — vị ngọt vừa, thơm dịu.'},
+  {name:'Bánh nướng nhân sen nhuyễn 180gr', price:55000, status:'CÒN HÀNG', img:'images/sen-nhuyen.png', cat:'Thanh nhẹ', desc:'Nhân sen xay nhuyễn, mịn bùi — vị thanh tao, không ngấy.'},
+  {name:'Bánh nướng nhân sữa dừa 180gr', price:55000, status:'CÒN HÀNG', img:'images/sua-dua.png', cat:'Béo ngậy', desc:'Nhân sữa dừa béo ngậy, thơm dịu — vị ngọt vừa, tan mềm.'},
+  {name:'Bánh nướng nhân socola chảy 180gr', price:60000, status:'CÒN HÀNG', img:'images/socola.png', cat:'Hiện đại', desc:'Vỏ bánh vàng óng, mềm mịn. Nhân socola đậm vị, tan chảy khi cắt — vị ngọt vừa, hơi đắng nhẹ, không ngấy.'},
+  {name:'Bánh nướng nhân thập cẩm trứng muối 180gr', price:60000, status:'CÒN HÀNG', img:'images/thap-cam-trung-muoi.png', cat:'Truyền thống', desc:'Thập cẩm đậm đà kết hợp trứng muối bùi béo — vị mặn ngọt hài hòa.'},
+  {name:'Bánh nướng nhân đậu xanh trứng muối 180gr', price:60000, status:'CÒN HÀNG', img:'images/dau-xanh-trung-muoi.png', cat:'Thanh nhẹ', desc:'Đậu xanh thanh nhẹ kết hợp trứng muối bùi béo — vị cân bằng, không ngấy.'},
+];
+
+var defaultGiftBoxes = [
+  {name:'Hộp quà Phúc Nguyệt', price:359000, contains:'4 bánh nướng 180gr tự chọn nhân', desc:'Hộp bìa cứng in ép kim sang trọng, quai mạ đồng. Phù hợp tặng đối tác, sếp, người thân.', imgs:['images/hop-phuc-nguyet-1.jpg','images/hop-phuc-nguyet-2.jpg','images/hop-phuc-nguyet-3.jpg','']},
+  {name:'Hộp quà Sen Ngự Bát Giác', price:299000, contains:'4 bánh nướng 180gr tự chọn nhân', desc:'Hộp bát giác giấy ivory cao cấp, dây xách lụa. Phù hợp tặng bạn bè, gia đình.', imgs:['images/hop-sen-ngu-1.jpg','images/hop-sen-ngu-2.jpg','images/hop-sen-ngu-3.jpg','']},
+];
+
+function renderProducts() {
+  var html = '';
+  products.forEach(function(p, i) {
+    html += '<div class="product-row" style="grid-template-columns:auto 2fr 1fr 1fr 1.5fr 2fr auto;">' +
+      '<div class="order-group">' +
+        '<button class="btn-order" onclick="moveProduct(' + i + ',-1)" title="Đưa lên trên"' + (i===0?' disabled':'') + '>▲</button>' +
+        '<button class="btn-order" onclick="moveProduct(' + i + ',1)" title="Đưa xuống dưới"' + (i===products.length-1?' disabled':'') + '>▼</button>' +
+      '</div>' +
+      '<input type="text" value="' + escHtml(p.name) + '" onchange="products[' + i + '].name=this.value">' +
+      '<input type="number" value="' + p.price + '" onchange="products[' + i + '].price=parseInt(this.value)">' +
+      '<select onchange="products[' + i + '].status=this.value">' +
+        '<option value="CÒN HÀNG"' + (p.status==='CÒN HÀNG'?' selected':'') + '>✅ Còn hàng</option>' +
+        '<option value="HẾT HÀNG"' + (p.status==='HẾT HÀNG'?' selected':'') + '>❌ Hết hàng</option>' +
+        '<option value="SẮP CÓ"' + (p.status==='SẮP CÓ'?' selected':'') + '>⏳ Sắp có</option>' +
+      '</select>' +
+      '<input type="text" value="' + escHtml(p.img||'') + '" placeholder="images/ten-anh.png" onchange="products[' + i + '].img=this.value">' +
+      '<textarea rows="2" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(240,192,64,0.3);border-radius:6px;padding:8px 10px;color:#FFE080;font-size:0.82rem;font-family:inherit;outline:none;resize:vertical;" placeholder="Mô tả ngắn..." onchange="products[' + i + '].desc=this.value">' + escHtml(p.desc||'') + '</textarea>' +
+      '<button class="btn btn-del" onclick="removeProduct(' + i + ')">×</button>' +
+    '</div>';
+  });
+  document.getElementById('productList').innerHTML = html;
+}
+
+function moveProduct(i, dir) {
+  var j = i + dir;
+  if (j < 0 || j >= products.length) return;
+  var tmp = products[i];
+  products[i] = products[j];
+  products[j] = tmp;
+  renderProducts();
+}
+
+function renderGiftBoxes() {
+  var html = '';
+  giftBoxes.forEach(function(g, i) {
+    var imgs = g.imgs || ['','','',''];
+  while(imgs.length < 4) imgs.push('');
+  html += '<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;margin-bottom:8px;">' +
+      '<div class="gift-head-row">' +
+        '<div class="order-group" style="margin-bottom:8px;">' +
+          '<button class="btn-order" onclick="moveGiftBox(' + i + ',-1)" title="Đưa lên trên"' + (i===0?' disabled':'') + '>▲</button>' +
+          '<button class="btn-order" onclick="moveGiftBox(' + i + ',1)" title="Đưa xuống dưới"' + (i===giftBoxes.length-1?' disabled':'') + '>▼</button>' +
+        '</div>' +
+        '<div><label>Tên hộp quà</label><input type="text" value="' + escHtml(g.name) + '" onchange="giftBoxes[' + i + '].name=this.value"></div>' +
+        '<div><label>Giá (đ)</label><input type="number" value="' + g.price + '" onchange="giftBoxes[' + i + '].price=parseInt(this.value)"></div>' +
+        '<div><label>Trạng thái</label><select onchange="giftBoxes[' + i + '].status=this.value">' +
+          '<option value="CÒN HÀNG"' + ((g.status||'CÒN HÀNG')==='CÒN HÀNG'?' selected':'') + '>✅ Còn hàng</option>' +
+          '<option value="HẾT HÀNG"' + (g.status==='HẾT HÀNG'?' selected':'') + '>❌ Hết hàng</option>' +
+          '<option value="SẮP CÓ"' + (g.status==='SẮP CÓ'?' selected':'') + '>⏳ Sắp có</option>' +
+        '</select></div>' +
+      '</div>' +
+      '<label>Nội dung (vd: 4 bánh 180gr tự chọn nhân)</label><input type="text" value="' + escHtml(g.contains||'') + '" onchange="giftBoxes[' + i + '].contains=this.value">' +
+      '<label>Mô tả hộp (xuống dòng bằng Enter)</label><textarea rows="4" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(240,192,64,0.3);border-radius:6px;padding:8px 10px;color:#FFE080;font-size:0.82rem;font-family:inherit;outline:none;resize:vertical;" onchange="giftBoxes[' + i + '].desc=this.value">' + escHtml(g.desc||'') + '</textarea>' +
+      '<label>URL ảnh 1 (ảnh chính)</label><input type="text" value="' + escHtml(imgs[0]) + '" placeholder="images/hop-1.jpg" onchange="updateGiftImg(' + i + ',0,this.value)">' +
+      '<label>URL ảnh 2</label><input type="text" value="' + escHtml(imgs[1]) + '" placeholder="images/hop-2.jpg" onchange="updateGiftImg(' + i + ',1,this.value)">' +
+      '<label>URL ảnh 3</label><input type="text" value="' + escHtml(imgs[2]) + '" placeholder="images/hop-3.jpg" onchange="updateGiftImg(' + i + ',2,this.value)">' +
+      '<label>URL ảnh 4 (tùy chọn)</label><input type="text" value="' + escHtml(imgs[3]) + '" placeholder="images/hop-4.jpg" onchange="updateGiftImg(' + i + ',3,this.value)">' +
+      '<div style="text-align:right;margin-top:6px;"><button class="btn btn-del" onclick="removeGiftBox(' + i + ')">× Xóa</button></div>' +
+    '</div>';
+  });
+  document.getElementById('giftBoxList').innerHTML = html;
+}
+
+function moveGiftBox(i, dir) {
+  var j = i + dir;
+  if (j < 0 || j >= giftBoxes.length) return;
+  var tmp = giftBoxes[i];
+  giftBoxes[i] = giftBoxes[j];
+  giftBoxes[j] = tmp;
+  renderGiftBoxes();
+}
+
+function addProduct() {
+  products.push({name:'Sản phẩm mới', price:55000, status:'CÒN HÀNG'});
+  renderProducts();
+}
+
+function removeProduct(i) {
+  products.splice(i, 1);
+  renderProducts();
+}
+
+function addGiftBox() {
+  giftBoxes.push({name:'Hộp quà mới', price:299000, desc:''});
+  renderGiftBoxes();
+}
+
+function removeGiftBox(i) {
+  giftBoxes.splice(i, 1);
+  renderGiftBoxes();
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatMoney(n) {
+  return parseInt(n).toLocaleString('vi-VN') + 'đ';
+}
+
+function saveConfig() {
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang lưu...';
+  showMsg('', '');
+
+  var config = {
+    admin_action: 'save_config',
+    products: products,
+    giftBoxes: giftBoxes,
+    khuyen_mai: document.getElementById('kmText').value.trim(),
+    km_end: document.getElementById('kmEnd').value, // lưu dạng YYYY-MM-DD
+    ship: {
+      hanoi: parseInt(document.getElementById('shipHN').value) || 40000,
+      north: parseInt(document.getElementById('shipNorth').value) || 40000,
+      central: parseInt(document.getElementById('shipCentral').value) || 60000,
+      south: parseInt(document.getElementById('shipSouth').value) || 70000,
+      freeship_from: parseInt(document.getElementById('freeshipFrom').value) || 500000
+    },
+    extra_note: document.getElementById('extraNote').value.trim(),
+    admin_pwd: document.getElementById('adminPwd').value.trim(),
+    shopee_url: document.getElementById('shopeeUrl').value.trim(),
+    tiktok_url: document.getElementById('tiktokUrl').value.trim()
+  };
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify(config)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    btn.disabled = false;
+    btn.textContent = '💾 Lưu cấu hình';
+    if(d.ok) {
+      showMsg('✅ Đã lưu thành công! Thanh Hằng sẽ dùng thông tin mới ngay.', 'ok');
+    } else {
+      showMsg('❌ Lỗi: ' + (d.message || 'Không rõ'), 'err');
+    }
+  })
+  .catch(function(e){
+    btn.disabled = false;
+    btn.textContent = '💾 Lưu cấu hình';
+    showMsg('❌ Lỗi kết nối: ' + e.message, 'err');
+  });
+}
+
+function showMsg(text, type) {
+  var el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  el.style.display = text ? 'block' : 'none';
+}
+
+function loadConfig() {
+  setStatus('loading', 'Đang tải...');
+  fetch(APPS_SCRIPT_URL + '?action=get_config')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.ok && d.config) {
+      var c = d.config;
+      products = c.products || defaultProducts;
+      giftBoxes = c.giftBoxes || defaultGiftBoxes;
+      document.getElementById('kmText').value = c.khuyen_mai || '';
+      (function(){
+        var km = c.km_end || '';
+        if(km) {
+          // Hỗ trợ cả YYYY-MM-DD và DD/MM/YYYY
+          if(km.indexOf('-') > 0 && km.length === 10) {
+            document.getElementById('kmEnd').value = km; // YYYY-MM-DD → dùng thẳng
+          } else if(km.indexOf('/') > 0) {
+            var parts = km.split('/');
+            if(parts.length === 3) {
+              document.getElementById('kmEnd').value = parts[2] + '-' + parts[1] + '-' + parts[0];
+            }
+          }
+        }
+      })();
+      document.getElementById('shipHN').value = (c.ship && c.ship.hanoi) || 40000;
+      document.getElementById('shipNorth').value = (c.ship && c.ship.north) || 40000;
+      document.getElementById('shipCentral').value = (c.ship && c.ship.central) || 60000;
+      document.getElementById('shipSouth').value = (c.ship && c.ship.south) || 70000;
+      document.getElementById('freeshipFrom').value = (c.ship && c.ship.freeship_from) || 500000;
+      document.getElementById('extraNote').value = c.extra_note || '';
+      document.getElementById('adminPwd').value = c.admin_pwd || '';
+      document.getElementById('shopeeUrl').value = c.shopee_url || '';
+      document.getElementById('tiktokUrl').value = c.tiktok_url || '';
+      setStatus('ok', 'Đã kết nối');
+    } else {
+      // Dùng default
+      products = defaultProducts.slice();
+      giftBoxes = defaultGiftBoxes.slice();
+      setStatus('ok', 'Dùng dữ liệu mặc định');
+    }
+    renderProducts();
+    renderGiftBoxes();
+  })
+  .catch(function(){
+    products = defaultProducts.slice();
+    giftBoxes = defaultGiftBoxes.slice();
+    renderProducts();
+    renderGiftBoxes();
+    setStatus('', 'Không kết nối được');
+  });
+}
+
+function setStatus(type, text) {
+  document.getElementById('statusDot').className = 'status-dot ' + type;
+  document.getElementById('statusText').textContent = text;
+}
+
+
+function toggleCard(id) {
+  // Tìm card-body theo icon
+  var icon = document.getElementById('icon-' + id);
+  if(!icon) return;
+  var cardHead = icon.closest('.card-head');
+  var cardBody = cardHead.nextElementSibling;
+  if(!cardBody || !cardBody.classList.contains('card-body')) return;
+
+  var isOpen = !cardBody.classList.contains('collapsed');
+  if(isOpen) {
+    cardBody.classList.add('collapsed');
+    icon.classList.remove('open');
+  } else {
+    cardBody.classList.remove('collapsed');
+    icon.classList.add('open');
+  }
+}
+
+// Mặc định đóng tất cả trừ card đầu tiên
+document.addEventListener('DOMContentLoaded', function() {
+  var bodies = document.querySelectorAll('.card-body');
+  bodies.forEach(function(b, i) {
+    if(i > 0) b.classList.add('collapsed');
+  });
+  var icons = document.querySelectorAll('.accordion-icon');
+  icons.forEach(function(ic, i) {
+    if(i > 0) ic.classList.remove('open');
+  });
+});
+
+function updateGiftImg(boxIdx, imgIdx, val) {
+  if(!giftBoxes[boxIdx].imgs) giftBoxes[boxIdx].imgs = ['','','',''];
+  giftBoxes[boxIdx].imgs[imgIdx] = val;
+}
+
+loadConfig();
+
+function doLogin() {
+  var pwd = document.getElementById('loginInput').value.trim();
+  if (!pwd) return;
+
+  document.getElementById('loginLoading').style.display = 'block';
+  document.getElementById('loginErr').style.display = 'none';
+
+  fetch(APPS_SCRIPT_URL + '?action=get_config')
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    document.getElementById('loginLoading').style.display = 'none';
+    var correctPwd = (d.ok && d.config && d.config.admin_pwd) ? d.config.admin_pwd : 'XuanDinhAdmin2026';
+    if (pwd === correctPwd) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+      document.getElementById('loginInput').value = '';
+      document.getElementById('loginInput').focus();
+    }
+  })
+  .catch(function(){
+    document.getElementById('loginLoading').style.display = 'none';
+    // Fallback: dùng mật khẩu mặc định nếu không kết nối được Sheet
+    if (pwd === 'XuanDinhAdmin2026') {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  });
+}
+</script>
+</div><!-- end mainApp -->
+</body>
+</html>
